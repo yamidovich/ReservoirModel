@@ -16,20 +16,20 @@ def get_res_scattered(n_samples=500, noise=0.4, random_state=None) -> tuple:
 
 
 def get_grid_from_scattered(ds: pd.DataFrame,
-                       y_min: float = -1.5, y_max: float = 1.5,
-                       x_min: float = -1.5, x_max: float = 1.5,
-                       n_x: int = 25, n_y: int = 25) -> np.ndarray:
+                            y_min: float = -1.5, y_max: float = 1.5,
+                            x_min: float = -1.5, x_max: float = 1.5,
+                            n_x: int = 25, n_y: int = 25) -> np.ndarray:
     """
     from scattered df with point returns a greed as a matrix.
     :param ds: (np.ndarray(2, n), np.ndarray(n) \in {1, 2}^n )
     :param y_min: as distribution for scattered
-    boun may be generated randomly here is a handcrafted bound
+    bound may be generated randomly here is a handcrafted bound
     :param y_max: as distribution for scattered
-    boun may be generated randomly here is a handcrafted bound
+    bound may be generated randomly here is a handcrafted bound
     :param x_min: as distribution for scattered
-    boun may be generated randomly here is a handcrafted bound
+    bound may be generated randomly here is a handcrafted bound
     :param x_max: as distribution for scattered
-    boun may be generated randomly here is a handcrafted bound
+    bound may be generated randomly here is a handcrafted bound
     :param n_x: number of cells in x component
     :param n_y: number of cells in x component
     :return: np.ndarray(n_y, n_xx) \in [0,1]^{n_x * n_y} or some cells can be equal
