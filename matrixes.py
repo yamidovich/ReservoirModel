@@ -154,12 +154,15 @@ class TInterBlockMatrix:
         if (type(item) == tuple) & (len(item) == 2):
             i, j = item
             if check_int(i) & check_half(j):
-                out = self.__d_matrix[i, j] * self.__dx_matrix[i] * self.__k_matrix[i, j] / self.__B_alpha / self.__mu
+                out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
+                out /= self.__B_alpha / self.__mu
                 out /= (self.__dy_matrix(floor(j)) + self.__dy_matrix(ceil(j))) / 2
                 return out
 
-            if check_half(i) & check_int(j):
-                out = self.__d_matrix[i, j] * self.__dy_matrix[i] * self.__k_matrix[i, j] / self.__B_alpha / self.__mu
+            elif check_half(i) & check_int(j):
+                out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
+                out /= self.__B_alpha * self.__mu
                 out /= (self.__dx_matrix(floor(j)) + self.__dx_matrix(ceil(j))) / 2
                 return out
-            # if for some reason not boundary condition
+            else:
+                assert False, "wrong index, not int + int and a half-like int"
