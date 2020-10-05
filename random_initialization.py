@@ -1,6 +1,7 @@
 from sklearn.datasets import make_moons, make_circles
 import pandas as pd
 import numpy as np
+from scipy import ndimage
 
 
 def get_saturation_scattered(n_samples=500, noise=0.4, random_state=None) -> tuple:
@@ -13,6 +14,18 @@ def get_saturation_scattered(n_samples=500, noise=0.4, random_state=None) -> tup
     :return: (x, y). x - np.ndarray(n_samples, 2) for 2 coordinates. y - {0, 1} oil or water
     """
     return make_moons(n_samples=n_samples, noise=noise, random_state=random_state)
+
+
+def get_depth_scattered(n_samples=500, noise=0.3, random_state=None, factor=0.4):
+    ds = make_circles(n_samples=n_samples, noise=noise, factor=factor, random_state=random_state)
+    y = ds[1] * 1.5 - 0.5 * np.ones(ds[1].shape)
+    return ds[0], y
+
+
+def get_porosity_scattered(n_samples=500, noise=0.4, random_state=None, factor=0.4):
+    ds = make_circles(n_samples=n_samples, noise=noise, factor=factor, random_state=random_state)
+    y = ds[1] * 1.5 - 0.5 * np.ones(ds[1].shape)
+    return ds[0], y
 
 
 def get_grid_from_scattered(ds: pd.DataFrame,
@@ -37,7 +50,7 @@ def get_grid_from_scattered(ds: pd.DataFrame,
     """
     xs = np.linspace(x_min, x_max, n_x + 1)
     ys = np.linspace(y_min, y_max, n_y + 1)
-    greed_matrix = (-1) * np.ones((n_x, n_y))
+    greed_matrix = np.nan * np.ones((n_x, n_y))
 
     for ix in range(len(xs) - 1):
         for iy in range(len(ys) - 1):
@@ -46,17 +59,5 @@ def get_grid_from_scattered(ds: pd.DataFrame,
             _filter = (y_filter & x_filter)
             if _filter.sum() > 0:
                 greed_matrix[ix][iy] = ds[1][_filter].mean()
-
+    greed_matrix = ndimage.generic_filter(greed_matrix, np.nanmean, size=3, mode='constant', cval=np.NaN)
     return greed_matrix
-
-
-def get_depth_scattered(n_samples=500, noise=0.3, random_state=None, factor=0.4):
-    ds = make_circles(n_samples=n_samples, noise=noise, factor=factor, random_state=random_state)
-    y = ds[1] * 1.5 - 0.5 * np.ones(ds[1].shape)
-    return ds[0], y
-
-
-def get_porosity_scattered(n_samples=500, noise=0.4, random_state=None, factor=0.4):
-    ds = make_circles(n_samples=n_samples, noise=noise, factor=factor, random_state=random_state)
-    y = ds[1] * 1.5 - 0.5 * np.ones(ds[1].shape)
-    return ds[0], y
