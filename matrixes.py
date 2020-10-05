@@ -97,10 +97,12 @@ class KMatrix:
     so we have to call [1.5, 4.5] to get proper inter block value
     """
 
-    def __init__(self, k_values, dy_matrix, dx_matrix):
+    def __init__(self, k_values: np.ndarray, dy_matrix: np.array, dx_matrix: np.array):
         self.k = k_values
         self.dy = dy_matrix
         self.dx = dx_matrix
+        assert k_values.shape[0] == dx_matrix.shape[0]
+        assert k_values.shape[1] == dy_matrix.shape[0]
         # what if case is simple and no matrix for k and dx, dy needed and won't be called
         # but if k is a matrix and grid dx is a constant step -
         if (type(self.k) == np.ndarray) & check_if_numerical(self.dx) & check_if_numerical(self.dy):
