@@ -5,10 +5,10 @@ import numpy as np
 
 def get_saturation_scattered(n_samples=500, noise=0.4, random_state=None) -> tuple:
     """
-    returns scatter points for interpritation as water and oil
+    returns scatter points for interpretation as water and oil
     shape - moons
     :param n_samples: number of samples
-    :param noise: how water and oil are mixtured
+    :param noise: how water and oil are mixed
     :param random_state: rand state
     :return: (x, y). x - np.ndarray(n_samples, 2) for 2 coordinates. y - {0, 1} oil or water
     """
