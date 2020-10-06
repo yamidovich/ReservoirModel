@@ -40,6 +40,7 @@ class KMatrix:
         self.k = k_values
         self.dy = dy_matrix
         self.dx = dx_matrix
+        self.shape = k_values.shape
         assert k_values.shape[0] == dx_matrix.shape[0]
         assert k_values.shape[1] == dy_matrix.shape[0]
         # what if case is simple and no matrix for k and dx, dy needed and won't be called
@@ -77,7 +78,7 @@ class KMatrix:
                 out = 1 / out
                 out *= self.dx[floor(i)] + self.dx[ceil(i)]
                 return out
-            # if for some reason not boundary condition
+            # if for bound condition reason not inter cell condition
             if check_int(i) & check_int(j):
                 return self.k[item]
 
@@ -93,6 +94,7 @@ class DMatrix:
 
     def __init__(self, d_values):
         self.__d = d_values
+        self.shape = d_values.shape
 
     def __getitem__(self, item):
         """
@@ -134,12 +136,15 @@ class TInterBlockMatrix:
                  k_values: np.ndarray,
                  dx_matrix: np.array,
                  dy_matrix: np.array,
-                 d_matrix: DMatrix,
-                 b_alpha, mu):
+                 d_matrix: DMatrix):
         self.__k_matrix = KMatrix(k_values, dy_matrix, dx_matrix)
         self.__d_matrix = d_matrix
         self.__dx_matrix = dx_matrix
         self.__dy_matrix = dy_matrix
+        assert k_values.shape[0] == dx_matrix.shape[0], 'input shape issue, k_values and dx'
+        assert k_values.shape[1] == dy_matrix.shape[0], 'input shape issue k_values and dy'
+        assert k_values.shape == d_matrix.shape, 'input shape issue k values and depth'
+        self.shape = k_values.shape
 
     def __getitem__(self, item):
         """
@@ -150,8 +155,35 @@ class TInterBlockMatrix:
         # simplest case
         # major case - tuple
         if (type(item) == tuple) & (len(item) == 2):
-            # TODO define boundary cells
             i, j = item
+            nx, ny = self.__k_matrix.shape
+            # here are bounds
+            if (i == -0.5) & (j <= ny - 1) & (0 <= j) & check_int(j):
+                i = 0
+                out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
+                out /= (self.__dx_matrix(floor(j)) + self.__dx_matrix(ceil(j))) / 2
+                return 2 * out
+            # one of bound
+            if (i == nx - 0.5) & (j <= ny - 1) & (0 <= j) & check_int(j):
+                i = nx - 1
+                out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
+                out /= (self.__dx_matrix(floor(j)) + self.__dx_matrix(ceil(j))) / 2
+                return 2 * out
+
+            # other 2 line bounds
+            if (j == -0.5) & (i <= nx - 1) & (0 <= i) & check_int(i):
+                j = 0
+                out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
+                out /= (self.__dy_matrix(floor(j)) + self.__dy_matrix(ceil(j))) / 2
+                return 2 * out
+            # bound
+            if (j == ny - 0.5) & (j <= ny - 1) & (0 <= j) & check_int(j):
+                j = ny - 1
+                out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
+                out /= (self.__dy_matrix(floor(j)) + self.__dy_matrix(ceil(j))) / 2
+                return 2 * out
+
+            # major cases
             if check_int(i) & check_half(j):
                 out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
                 out /= (self.__dy_matrix(floor(j)) + self.__dy_matrix(ceil(j))) / 2
@@ -163,3 +195,4 @@ class TInterBlockMatrix:
                 return out
             else:
                 assert False, "wrong index, not int + int and a half-like int"
+
