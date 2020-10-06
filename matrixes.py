@@ -138,8 +138,6 @@ class TInterBlockMatrix:
                  b_alpha, mu):
         self.__k_matrix = KMatrix(k_values, dy_matrix, dx_matrix)
         self.__d_matrix = d_matrix
-        self.__B_alpha = b_alpha
-        self.__mu = mu
         self.__dx_matrix = dx_matrix
         self.__dy_matrix = dy_matrix
 
@@ -155,13 +153,11 @@ class TInterBlockMatrix:
             i, j = item
             if check_int(i) & check_half(j):
                 out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
-                out /= self.__B_alpha / self.__mu
                 out /= (self.__dy_matrix(floor(j)) + self.__dy_matrix(ceil(j))) / 2
                 return out
 
             elif check_half(i) & check_int(j):
                 out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
-                out /= self.__B_alpha * self.__mu
                 out /= (self.__dx_matrix(floor(j)) + self.__dx_matrix(ceil(j))) / 2
                 return out
             else:
