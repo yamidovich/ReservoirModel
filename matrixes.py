@@ -150,6 +150,7 @@ class TInterBlockMatrix:
         # simplest case
         # major case - tuple
         if (type(item) == tuple) & (len(item) == 2):
+            # TODO define boundary cells
             i, j = item
             if check_int(i) & check_half(j):
                 out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
