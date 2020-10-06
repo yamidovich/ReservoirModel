@@ -196,3 +196,23 @@ class TInterBlockMatrix:
             else:
                 assert False, "wrong index, not int + int and a half-like int"
 
+
+def get_q_p(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
+    nx, ny = t_matrix.shape
+    out = np.zeros(nx * ny)
+    for col_ind in range(ny):
+        out[col_ind] = 2 * t_matrix[-0.5, col_ind] * p_b
+        out[nx * ny - ny + col_ind] = 2 * t_matrix[nx-0.5, col_ind] * p_b
+    for row_ind in range(nx):
+        out[ny * row_ind] = 2 * t_matrix[row_ind, -0.5] * p_b
+        out[ny * (row_ind + 1) - 1] = 2 * t_matrix[ny-0.5, row_ind] * p_b
+    return out
+
+
+def get_b_matrix(depth: np.ndarray, dx: np.ndarray, dy: np.ndarray,
+                 phi_matrix: np.ndarray, b_a: float) -> np.ndarray:
+    return np.diag((depth * dx * dy * phi_matrix / b_a).reshpe(-1))
+
+
+def get_t_upd_matrix(t: TInterBlockMatrix) -> np.ndarray:
+    pass
