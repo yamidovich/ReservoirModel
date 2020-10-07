@@ -36,21 +36,76 @@ class KMatrix:
     so we have to call [1.5, 4.5] to get proper inter block value
     """
 
-    def __init__(self, k_values: np.ndarray, dy_matrix: np.array, dx_matrix: np.array):
-        self.k = k_values
+    def __init__(self, k_values, dy_matrix: np.array, dx_matrix: np.array):
+        if type(k_values) == list:
+            self.k = k_values
+        elif type(k_values) == np.ndarray:
+            self.k = [k_values]
+        else:
+            assert False, 'k_values are list of np.ndarray of one of them'
         self.dy = dy_matrix
         self.dx = dx_matrix
-        self.shape = k_values.shape
-        assert k_values.shape[0] == dx_matrix.shape[0]
-        assert k_values.shape[1] == dy_matrix.shape[0]
+        self.__nums = len(self.k)
+        self.shape = k_values[0].shape
+        assert self.k[0].shape[0] == dx_matrix.shape[0]
+        assert self.k[0].shape[1] == dy_matrix.shape[0]
         # what if case is simple and no matrix for k and dx, dy needed and won't be called
         # but if k is a matrix and grid dx is a constant step -
-        if (type(self.k) == np.ndarray) & check_if_numerical(self.dx) & check_if_numerical(self.dy):
-            self.dx = np.ones(self.k.shape) * self.dx
-            self.dy = np.ones(self.k.shape) * self.dy
-        self.scalar = False
-        if check_if_numerical(self.k) & check_if_numerical(self.dx) & check_if_numerical(self.dy):
-            self.scalar = True
+        if check_if_numerical(self.dx) & check_if_numerical(self.dy):
+            self.dx = np.ones(self.k[0].shape[0]) * self.dx
+            self.dy = np.ones(self.k[0].shape[1]) * self.dy
+
+    def __truediv__(self, other):
+        __k_values = None
+        if type(self.k) == list:
+            __k_values = [_k / other for _k in self.k]
+        elif type(self.k) == np.ndarray:
+            __k_values = self.k / other
+        else:
+            assert False, 'k_values are list of np.ndarray of one of them'
+        out = KMatrix(k_values=__k_values, dx_matrix=self.dx, dy_matrix=self.dy)
+        return out
+
+    def __mul__(self, other):
+        __k_values = None
+        if type(self.k) == list:
+            __k_values = [_k * other for _k in self.k]
+        elif type(self.k) == np.ndarray:
+            __k_values = self.k * other
+        else:
+            assert False, 'k_values are list of np.ndarray of one of them'
+        out = KMatrix(k_values=__k_values, dx_matrix=self.dx, dy_matrix=self.dy)
+        return out
+
+    def __getitem_part__(self, item, num):
+        """
+        returns an inter block value or in-block...
+        :param item: [1.5, 3.5], not [1.5][3.5]
+        :return:
+        """
+        # major case - tuple
+        if (type(item) == tuple) & (len(item) == 2):
+            i, j = item
+
+            if check_int(i) & check_half(j):
+                out = self.dy[floor(j)] / self.k[num][floor(i), floor(j)]
+                out += self.dy[ceil(j)] / self.k[num][floor(i), ceil(j)]
+                out = 1 / out
+                out *= self.dy[floor(j)] + self.dy[ceil(j)]
+                return out
+
+            if check_half(i) & check_int(j):
+                out = self.dx[floor(i)] / self.k[num][floor(i), floor(j)]
+                out += self.dx[ceil(i)] / self.k[num][ceil(i), floor(j)]
+                out = 1 / out
+                out *= self.dx[floor(i)] + self.dx[ceil(i)]
+                return out
+            # if for bound condition reason not inter cell condition
+            if check_int(i) & check_int(j):
+                return self.k[num][item]
+
+        elif type(item) == int:
+            return self.k[num][item]
 
     def __getitem__(self, item):
         """
@@ -58,32 +113,20 @@ class KMatrix:
         :param item: [1.5, 3.5], not [1.5][3.5]
         :return:
         """
-        # simplest case
-        if self.scalar:
-            return self.k
-        # major case - tuple
-        if (type(item) == tuple) & (len(item) == 2):
-            i, j = item
+        out = 0
+        for n in range(self.__nums):
+            out += self.__getitem_part__(item=item, num=n)
+        return out
 
-            if check_int(i) & check_half(j):
-                out = self.dy[floor(j)] / self.k[floor(i), floor(j)]
-                out += self.dy[ceil(j)] / self.k[floor(i), ceil(j)]
-                out = 1 / out
-                out *= self.dy[floor(j)] + self.dy[int(i)][ceil(j)]
-                return out
+    def __add__(self, other):
+        comparison = self.dx == other.dx
+        equal_arrays = comparison.all()
+        assert equal_arrays
 
-            if check_half(i) & check_int(j):
-                out = self.dx[floor(i)] / self.k[floor(i), floor(j)]
-                out += self.dx[ceil(i)] / self.k[ceil(i), floor(j)]
-                out = 1 / out
-                out *= self.dx[floor(i)] + self.dx[ceil(i)]
-                return out
-            # if for bound condition reason not inter cell condition
-            if check_int(i) & check_int(j):
-                return self.k[item]
-
-        elif type(item) == int:
-            return self.k[item]
+        comparison = self.dy == other.dy
+        equal_arrays = comparison.all()
+        assert equal_arrays
+        return KMatrix(k_values=self.k + other.k, dx_matrix=self.dx, dy_matrix=self.dy)
 
 
 class DMatrix:
