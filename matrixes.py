@@ -224,29 +224,24 @@ def one_dim_index_to_two(m: int, ny: int) -> tuple:
 
 def get_t_upd_matrix(t: TInterBlockMatrix) -> np.ndarray:
     nx, ny = t.shape
-    out = np.zeros(nx * ny, nx * ny)
+    out = np.zeros((nx * ny, nx * ny))
     for d_i in range(nx * ny):
         c_i = one_dim_index_to_two(m=d_i, ny=ny)
-        out[d_i, d_i] = t[c_i[0] + 0.5, c_i[1]]
+        out[d_i, d_i] += t[c_i[0] + 0.5, c_i[1]]
         out[d_i, d_i] += t[c_i[0] - 0.5, c_i[1]]
         out[d_i, d_i] += t[c_i[0], c_i[1] - 0.5]
         out[d_i, d_i] += t[c_i[0], c_i[1] + 0.5]
 
-        try:
-            out[d_i-1, d_i - 1] = -1 * t[c_i[0], c_i[1] - 0.5]
-        except IndexError:
-            pass
-        try:
-            out[d_i, d_i + 1] = -1 * t[c_i[0], c_i[1] + 0.5]
-        except IndexError:
-            pass
+        if 0 <= d_i - 1 < ny * nx:
+            out[d_i, d_i - 1] = -1 * t[c_i[0], c_i[1] - 0.5]
 
-        try:
-            out[d_i - ny, d_i + 1] = -1 * t[c_i[0] - 0.5, c_i[1]]
-        except IndexError:
-            pass
-        try:
-            out[d_i + ny, d_i + 1] = -1 * t[c_i[0] + 0.5, c_i[1]]
-        except IndexError:
-            pass
+        if 0 <= d_i + 1 < ny * nx:
+            out[d_i, d_i + 1] = -1 * t[c_i[0], c_i[1] + 0.5]
+
+        if 0 <= d_i - ny < ny * nx:
+            out[d_i, d_i - ny] = -1 * t[c_i[0] - 0.5, c_i[1]]
+
+        if 0 <= d_i + ny < ny * nx:
+            out[d_i, d_i + ny] = -1 * t[c_i[0] + 0.5, c_i[1]]
+
     return out
