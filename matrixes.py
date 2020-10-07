@@ -201,11 +201,11 @@ def get_q_p(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
     nx, ny = t_matrix.shape
     out = np.zeros(nx * ny)
     for col_ind in range(ny):
-        out[col_ind] = 2 * t_matrix[-0.5, col_ind] * p_b
-        out[nx * ny - ny + col_ind] = 2 * t_matrix[nx-0.5, col_ind] * p_b
+        out[col_ind] += 2 * t_matrix[-0.5, col_ind] * p_b
+        out[nx * ny - ny + col_ind] += 2 * t_matrix[nx-0.5, col_ind] * p_b
     for row_ind in range(nx):
-        out[ny * row_ind] = 2 * t_matrix[row_ind, -0.5] * p_b
-        out[ny * (row_ind + 1) - 1] = 2 * t_matrix[ny-0.5, row_ind] * p_b
+        out[ny * row_ind] += 2 * t_matrix[row_ind, -0.5] * p_b
+        out[ny * (row_ind + 1) - 1] += 2 * t_matrix[ny-0.5, row_ind] * p_b
     return out
 
 
