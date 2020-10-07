@@ -214,5 +214,39 @@ def get_b_matrix(depth: np.ndarray, dx: np.ndarray, dy: np.ndarray,
     return np.diag((depth * dx * dy * phi_matrix / b_a).reshpe(-1))
 
 
+def two_dim_index_to_one(i: int, j: int, ny: int) -> int:
+    return ny * i + j
+
+
+def one_dim_index_to_two(m: int, ny: int) -> tuple:
+    return floor(m / ny), m % ny
+
+
 def get_t_upd_matrix(t: TInterBlockMatrix) -> np.ndarray:
-    pass
+    nx, ny = t.shape
+    out = np.zeros(nx * ny, nx * ny)
+    for d_i in range(nx * ny):
+        c_i = one_dim_index_to_two(m=d_i, ny=ny)
+        out[d_i, d_i] = t[c_i[0] + 0.5, c_i[1]]
+        out[d_i, d_i] += t[c_i[0] - 0.5, c_i[1]]
+        out[d_i, d_i] += t[c_i[0], c_i[1] - 0.5]
+        out[d_i, d_i] += t[c_i[0], c_i[1] + 0.5]
+
+        try:
+            out[d_i-1, d_i - 1] = -1 * t[c_i[0], c_i[1] - 0.5]
+        except IndexError:
+            pass
+        try:
+            out[d_i, d_i + 1] = -1 * t[c_i[0], c_i[1] + 0.5]
+        except IndexError:
+            pass
+
+        try:
+            out[d_i - ny, d_i + 1] = -1 * t[c_i[0] - 0.5, c_i[1]]
+        except IndexError:
+            pass
+        try:
+            out[d_i + ny, d_i + 1] = -1 * t[c_i[0] + 0.5, c_i[1]]
+        except IndexError:
+            pass
+    return out
