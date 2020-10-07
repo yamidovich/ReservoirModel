@@ -11,7 +11,26 @@ k_matrix = KMatrix(k_values=np.array([[1, 2, 3, 5, 7],
                    )
 assert k_matrix[0.5, 1] == 10 / 3
 assert k_matrix[1, 1] == 5
+# some operators
+k_matrix = k_matrix / 5
 
+assert k_matrix[1, 1] == 1
+k_matrix *= 5
+k_matrix *= 3
+assert k_matrix[0.5, 1] == 10
+k_matrix /= 3
+# and the most complicated one - add
+k_matrix1 = KMatrix(k_values=np.array([[1, 4, 3, 5, 7],
+                                       [1, 5, 6, 1, 2],
+                                       [9, 5, 4, 1, 7]]),
+                    dy_matrix=np.array([7, 9, 7, 9, 7]),
+                    dx_matrix=np.array([1, 2, 1])
+                    )
+
+k_matrix = k_matrix + k_matrix1
+assert k_matrix[2, 1.5] == 16 / (9/5 + 7/4) + 16 / (9/5 + 7/6)
+
+# some tests for depth
 d_matrix = DMatrix(d_values=np.array([[1, 2, 3, 5, 7],
                                       [4, 5, 6, 1, 2],
                                       [9, 5, 6, 1, 4]]),
