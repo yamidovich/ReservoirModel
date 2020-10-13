@@ -240,7 +240,7 @@ class TInterBlockMatrix:
                 assert False, "wrong index, not int + int and a half-like int"
 
 
-def get_q_p(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
+def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
     nx, ny = t_matrix.shape
     out = np.zeros(nx * ny)
     for col_ind in range(ny):
