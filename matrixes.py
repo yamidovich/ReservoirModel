@@ -17,10 +17,6 @@ def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
     return out
 
 
-def two_dim_index_to_one(i: int, j: int, ny: int) -> int:
-    return ny * i + j
-
-
 def one_dim_index_to_two(m: int, ny: int) -> tuple:
     return floor(m / ny), m % ny
 
@@ -50,7 +46,7 @@ def get_t_upd_matrix(t: TInterBlockMatrix) -> np.ndarray:
     return out
 
 
-def get_b_p_w(consts: Constants, porosity) -> np.ndarray:
+def get_b_p_w(porosity, consts: Constants = Constants()) -> np.ndarray:
     return np.diag(porosity.reshape(-1) * consts.c_t() / consts.b_w())
 
 
@@ -58,11 +54,14 @@ def get_k_tilde(consts: Constants, k: KMatrix) -> KMatrix:
     return k * (consts.k_r_o() / consts.mu_oil() / consts.b_w() + consts.k_r_w() / consts.mu_water() / consts.b_w())
 
 
-def get_q_well(index1d_q: dict, nx, ny) -> np.ndarray:
-    out = np.zeros((nx * ny))
+def get_q_well(index1d_q: dict, nx:int, ny:int, s_o, s_w) -> tuple:
+    q_w = np.zeros((nx * ny))
+    q_o = np.zeros((nx * ny))
     for key in index1d_q:
-        out[key] = index1d_q[key]
-    return out
+        q_w[key] = index1d_q[key] * s_w[key] / (s_w[key] + s_o[key])
+        q_o[key] = index1d_q[key] * s_o[key] / (s_w[key] + s_o[key])
+
+    return q_w, q_o
 
 
 def get_b_s_w(consts: Constants, porosity) -> np.ndarray:
@@ -79,3 +78,12 @@ def get_k_s_w(consts: Constants, k: KMatrix) -> KMatrix:
 
 def get_k_s_o(consts: Constants, k: KMatrix) -> KMatrix:
     return k * consts.k_r_o() / consts.mu_water() / consts.b_o()
+
+
+def inverse_diag(x: np.ndarray):
+    assert x.shape[0] == x.shape[1]
+    out = x.copy()
+    for i in range(x.shape[0]):
+        out[i, i] = 1. / x[i, i]
+    return out
+
