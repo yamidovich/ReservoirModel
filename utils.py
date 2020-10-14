@@ -27,3 +27,7 @@ def check_int(x) -> bool:
     if int(x) == x:
         return True
     return False
+
+
+def two_dim_index_to_one(i: int, j: int, ny: int) -> int:
+    return ny * i + j
