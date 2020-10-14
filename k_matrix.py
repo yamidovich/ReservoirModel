@@ -59,6 +59,15 @@ class KMatrix:
         # major case - tuple
         if (type(item) == tuple) & (len(item) == 2):
             i, j = item
+            # bound
+            if i < 0:
+                return self.k[num][0, j]
+            if i >= self.shape[0] - 0.6:
+                return self.k[num][self.shape[0] - 1, j]
+            if j < 0:
+                return self.k[num][i, 0]
+            if j >= self.shape[1] - 0.6:
+                return self.k[num][i, self.shape[1] - 1]
 
             if u.check_int(i) & u.check_half(j):
                 out = self.dy[floor(j)] / self.k[num][floor(i), floor(j)]
