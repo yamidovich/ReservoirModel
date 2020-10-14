@@ -59,5 +59,6 @@ def get_grid_from_scattered(ds: pd.DataFrame,
             _filter = (y_filter & x_filter)
             if _filter.sum() > 0:
                 greed_matrix[ix][iy] = ds[1][_filter].mean() * 0.5 + 0.5
-    greed_matrix = ndimage.generic_filter(greed_matrix, np.nanmean, size=3, mode='constant', cval=np.NaN) * 0.5 + 0.5
+    greed_matrix = ndimage.generic_filter(greed_matrix, np.nanmean, size=int((n_x + n_y)/5), mode='constant',
+                                          cval=np.NaN) * 0.5 + 0.5
     return greed_matrix
