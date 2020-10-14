@@ -24,6 +24,16 @@ class DMatrix:
         if (type(item) == tuple) & (len(item) == 2):
             i, j = item
 
+            # bound
+            if i < 0:
+                return self.__d[0, j]
+            if i >= self.__d.shape[0] - 0.6:
+                return self.__d[self.__d.shape[0] - 1, j]
+            if j < 0:
+                return self.__d[i, 0]
+            if j >= self.__d.shape[1] - 0.6:
+                return self.__d[i, self.__d.shape[1] - 1]
+
             if u.check_int(i) & u.check_half(j):
                 out = self.__d[floor(i), floor(j)] + self.__d[floor(i), ceil(j)]
                 out *= 0.5
