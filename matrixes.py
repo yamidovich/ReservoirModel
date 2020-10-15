@@ -12,7 +12,7 @@ def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
         out[col_ind] += 2 * t_matrix[-0.5, col_ind] * p_b
         out[nx * ny - ny + col_ind] += 2 * t_matrix[nx-0.5, col_ind] * p_b
     for row_ind in range(nx):
-        out[ny * row_ind] += 2 * t_matrix[row_ind, -0.5] * p_b
+        out[ny * row_ind] = 2 * t_matrix[row_ind, -0.5] * p_b
         out[ny * (row_ind + 1) - 1] += 2 * t_matrix[ny-0.5, row_ind] * p_b
     return out
 
@@ -31,16 +31,16 @@ def get_t_upd_matrix(t: TInterBlockMatrix) -> np.ndarray:
         out[d_i, d_i] += t[c_i[0], c_i[1] - 0.5]
         out[d_i, d_i] += t[c_i[0], c_i[1] + 0.5]
 
-        if 0 <= d_i - 1 < ny * nx:
+        if 0 <= c_i[1] - 0.5:
             out[d_i, d_i - 1] = -1 * t[c_i[0], c_i[1] - 0.5]
 
-        if 0 <= d_i + 1 < ny * nx:
+        if c_i[1] < ny-1:
             out[d_i, d_i + 1] = -1 * t[c_i[0], c_i[1] + 0.5]
 
-        if 0 <= d_i - ny < ny * nx:
+        if 0 <= c_i[0] - 0.5:
             out[d_i, d_i - ny] = -1 * t[c_i[0] - 0.5, c_i[1]]
 
-        if 0 <= d_i + ny < ny * nx:
+        if c_i[0] < nx - 1:
             out[d_i, d_i + ny] = -1 * t[c_i[0] + 0.5, c_i[1]]
 
     return out
