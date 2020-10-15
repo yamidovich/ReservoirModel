@@ -10,6 +10,7 @@ class KMatrix:
     """
 
     def __init__(self, k_values, dy_matrix: np.array, dx_matrix: np.array):
+
         if type(k_values) == list:
             self.k = k_values
         elif type(k_values) == np.ndarray:
@@ -19,7 +20,7 @@ class KMatrix:
         self.dy = dy_matrix
         self.dx = dx_matrix
         self.__nums = len(self.k)
-        self.shape = k_values[0].shape
+        self.shape = self.k[0].shape
         assert self.k[0].shape[0] == dx_matrix.shape[0]
         assert self.k[0].shape[1] == dy_matrix.shape[0]
         # what if case is simple and no matrix for k and dx, dy needed and won't be called
