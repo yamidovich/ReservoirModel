@@ -9,10 +9,10 @@ def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
     nx, ny = t_matrix.shape
     out = np.zeros(nx * ny)
     for col_ind in range(ny):
-        out[col_ind] += 2 * t_matrix[-0.5, col_ind] * p_b
+        out[col_ind] += 1 * t_matrix[-0.5, col_ind] * p_b
         out[nx * ny - ny + col_ind] += 2 * t_matrix[nx-0.5, col_ind] * p_b
     for row_ind in range(nx):
-        out[ny * row_ind] = 2 * t_matrix[row_ind, -0.5] * p_b
+        out[ny * row_ind] = 1 * t_matrix[row_ind, -0.5] * p_b
         out[ny * (row_ind + 1) - 1] += 2 * t_matrix[ny-0.5, row_ind] * p_b
     return out
 
@@ -54,7 +54,7 @@ def get_k_tilde(consts: Constants, k: KMatrix) -> KMatrix:
     return k * (consts.k_r_o() / consts.mu_oil() / consts.b_w() + consts.k_r_w() / consts.mu_water() / consts.b_w())
 
 
-def get_q_well(index1d_q: dict, nx:int, ny:int, s_o, s_w) -> tuple:
+def get_q_well(index1d_q: dict, nx: int, ny: int, s_o, s_w) -> tuple:
     q_w = np.zeros((nx * ny))
     q_o = np.zeros((nx * ny))
     for key in index1d_q:
@@ -87,3 +87,11 @@ def inverse_diag(x: np.ndarray):
         out[i, i] = 1. / x[i, i]
     return out
 
+
+def diagonal_multidot(maxtrixes: list):
+    out = np.zeros(maxtrixes[0].shape)
+    np.fill_diagonal(out, 1)
+    for i in range(out.shape[0]):
+        for m in maxtrixes:
+            out[i, i] *= m[i, i]
+    return out
