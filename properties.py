@@ -10,12 +10,11 @@ class Constants:
         self.__k_r_o = 1.  # relative
         self.__k_r_w = 1.  # relative
         self.__k_avg = 1 * 1.987e-13  # 1 darcy to m^2
-        self.__dt = 0.5  # s
+        self.__dt = 5  # s
         self.__dx = 5.  # m
         self.__dy = 5.  # m
         self.__d_avg = 50.  # m
         self.__p_0 = 4e4 * 6894  # psi to Pa
-        self.__dx = 1.
 
     def dx(self):
         return float(self.__dx)
