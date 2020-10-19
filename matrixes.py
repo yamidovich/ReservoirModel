@@ -1,19 +1,18 @@
 import numpy as np
 from math import floor
 from properties import Constants
-from k_matrix import KMatrix
-from t_interblock import TInterBlockMatrix
+from interblock_matrixes import KMatrix, TInterBlockMatrix
 
 
-def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
+def get_q_bound(t_matrix: TInterBlockMatrix, p_b, p) -> np.ndarray:
     nx, ny = t_matrix.shape
     out = np.zeros(nx * ny)
     for col_ind in range(ny):
-        out[col_ind] += 1 * t_matrix[-0.5, col_ind] * p_b
-        out[nx * ny - ny + col_ind] += 2 * t_matrix[nx-0.5, col_ind] * p_b
+        out[col_ind] += 1 * t_matrix[-0.5, col_ind] * (p_b - p[col_ind])
+        out[nx * ny - ny + col_ind] += 2 * t_matrix[nx-0.5, col_ind] * (p_b - p[nx * ny - ny + col_ind])
     for row_ind in range(nx):
-        out[ny * row_ind] = 1 * t_matrix[row_ind, -0.5] * p_b
-        out[ny * (row_ind + 1) - 1] += 2 * t_matrix[ny-0.5, row_ind] * p_b
+        out[ny * row_ind] = 1 * t_matrix[row_ind, -0.5] * (p_b - p[ny * row_ind])
+        out[ny * (row_ind + 1) - 1] += 2 * t_matrix[ny-0.5, row_ind] * (p_b - p[ny * (row_ind + 1) - 1])
     return out
 
 
