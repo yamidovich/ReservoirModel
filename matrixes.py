@@ -4,15 +4,15 @@ from properties import Constants
 from interblock_matrixes import KMatrix, TInterBlockMatrix
 
 
-def get_q_bound(t_matrix: TInterBlockMatrix, p_b, p) -> np.ndarray:
+def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
     nx, ny = t_matrix.shape
     out = np.zeros(nx * ny)
     for col_ind in range(ny):
-        out[col_ind] += 1 * t_matrix[-0.5, col_ind] * (p_b - p[col_ind])
-        out[nx * ny - ny + col_ind] += 2 * t_matrix[nx-0.5, col_ind] * (p_b - p[nx * ny - ny + col_ind])
+        out[col_ind] += t_matrix[-0.5, col_ind] * p_b
+        out[nx * ny - ny + col_ind] += t_matrix[nx-0.5, col_ind] * p_b
     for row_ind in range(nx):
-        out[ny * row_ind] = 1 * t_matrix[row_ind, -0.5] * (p_b - p[ny * row_ind])
-        out[ny * (row_ind + 1) - 1] += 2 * t_matrix[ny-0.5, row_ind] * (p_b - p[ny * (row_ind + 1) - 1])
+        out[ny * row_ind] += t_matrix[row_ind, -0.5] * p_b
+        out[ny * (row_ind + 1) - 1] += t_matrix[ny-0.5, row_ind] * p_b
     return out
 
 
@@ -57,8 +57,16 @@ def get_q_well(index1d_q: dict, nx: int, ny: int, s_o, s_w) -> tuple:
     q_w = np.zeros((nx * ny))
     q_o = np.zeros((nx * ny))
     for key in index1d_q:
-        q_w[key] = index1d_q[key] * s_w[key] / (s_w[key] + s_o[key])
-        q_o[key] = index1d_q[key] * s_o[key] / (s_w[key] + s_o[key])
+        sw = s_w[key]
+        so = s_o[key]
+        if s_w[key] < 0:
+            sw = 0
+        if s_o[key] < 0:
+            so = 0
+        if (so == 0) & (sw == 0):
+            return q_w, q_o
+        q_w[key] = index1d_q[key] * sw
+        q_o[key] = index1d_q[key] * so
 
     return q_w, q_o
 

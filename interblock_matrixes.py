@@ -172,12 +172,14 @@ class TInterBlockMatrix:
                  k_matrix: KMatrix,
                  dx_matrix: np.array,
                  dy_matrix: np.array,
-                 d_matrix: DMatrix):
+                 d_matrix: DMatrix,
+                 boundary_condition='const_pressure'):
         self.__k_matrix = k_matrix
         self.__d_matrix = d_matrix
         self.__dx_matrix = dx_matrix
         self.__dy_matrix = dy_matrix
         self.shape = k_matrix.shape
+        self.__boundary_condition = boundary_condition
 
     def __getitem__(self, item):
         """
@@ -191,34 +193,48 @@ class TInterBlockMatrix:
             i, j = item
             nx, ny = self.__k_matrix.shape
             # here are bounds
-            if (i == -0.5) & (j <= ny - 1) & (0 <= j) & u.check_int(j):
-                # i = 0
-                # out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
-                # out /= (self.__dx_matrix[floor(j)] + self.__dx_matrix[ceil(j)]) / 2
-                # return 2 * out
-                return 0
-            # one of bound
-            if (i == nx - 0.5) & (j <= ny - 1) & (0 <= j) & u.check_int(j):
-                # i = nx - 1
-                # out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
-                # out /= (self.__dx_matrix[floor(j)] + self.__dx_matrix[ceil(j)]) / 2
-                # return 2 * out
-                return 0
+            if self.__boundary_condition == 'const_pressure':
+                if (i == -0.5) & (j <= ny - 1) & (0 <= j) & u.check_int(j):
+                    i = 0
+                    out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
+                    out /= (self.__dx_matrix[floor(j)] + self.__dx_matrix[ceil(j)]) / 2
+                    return 2 * out
+                    # return 0
+                # one of bound
+                if (i == nx - 0.5) & (j <= ny - 1) & (0 <= j) & u.check_int(j):
+                    i = nx - 1
+                    out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
+                    out /= (self.__dx_matrix[floor(j)] + self.__dx_matrix[ceil(j)]) / 2
+                    return 2 * out
+                    # return 0
 
-            # other 2 line bounds
-            if (j == -0.5) & (i <= nx - 1) & (0 <= i) & u.check_int(i):
-                # j = 0
-                # out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
-                # out /= (self.__dy_matrix[floor(j)] + self.__dy_matrix[ceil(j)]) / 2
-                # return 2 * out
-                return 0
-            # bound
-            if (j == ny - 0.5) & (i <= nx - 1) & (0 <= i) & u.check_int(i):
-                # j = ny - 1
-                # out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
-                # out /= (self.__dy_matrix[floor(j)] + self.__dy_matrix[ceil(j)]) / 2
-                # return 2 * out
-                return 0
+                # other 2 line bounds
+                if (j == -0.5) & (i <= nx - 1) & (0 <= i) & u.check_int(i):
+                    j = 0
+                    out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
+                    out /= (self.__dy_matrix[floor(j)] + self.__dy_matrix[ceil(j)]) / 2
+                    return 2 * out
+                    # return 0
+                # bound
+                if (j == ny - 0.5) & (i <= nx - 1) & (0 <= i) & u.check_int(i):
+                    j = ny - 1
+                    out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
+                    out /= (self.__dy_matrix[floor(j)] + self.__dy_matrix[ceil(j)]) / 2
+                    return 2 * out
+                    # return 0
+            elif self.__boundary_condition == 'no_flux':
+                if (i == -0.5) & (j <= ny - 1) & (0 <= j) & u.check_int(j):
+                    return 0
+                # one of bound
+                if (i == nx - 0.5) & (j <= ny - 1) & (0 <= j) & u.check_int(j):
+                    return 0
+
+                # other 2 line bounds
+                if (j == -0.5) & (i <= nx - 1) & (0 <= i) & u.check_int(i):
+                    return 0
+                # bound
+                if (j == ny - 0.5) & (i <= nx - 1) & (0 <= i) & u.check_int(i):
+                    return 0
 
             # major cases
             if u.check_int(i) & u.check_half(j):

@@ -6,11 +6,11 @@ class Constants:
         self.__B_o = 1.  # relative
         self.__c_o = 15.8e-10   # Pa^-1 https://www.sciencedirect.com/topics/engineering/oil-compressibility#:~:text=Oil%20compressibility%20(also%20called%20isothermal,10−6%20psi−1.
         self.__c_w = 15.8e-10  # Pa^-1
-        self.__c_r = 1e-4  # Pa^-1 https://www.sciencedirect.com/topics/engineering/formation-compressibility
+        self.__c_r = 1e-6 / 6894  # Pa^-1 https://www.sciencedirect.com/topics/engineering/formation-compressibility
         self.__k_r_o = 1.  # relative
         self.__k_r_w = 1.  # relative
         self.__k_avg = 1 * 1.987e-13  # 1 darcy to m^2
-        self.__dt = 5  # s
+        self.__dt = 10    # s
         self.__dx = 5.  # m
         self.__dy = 5.  # m
         self.__d_avg = 50.  # m
