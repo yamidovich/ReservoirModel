@@ -1,7 +1,5 @@
-from k_matrix import KMatrix
 from matrixes import get_t_upd_matrix
-from t_interblock import TInterBlockMatrix
-from d_matrix import DMatrix
+from interblock_matrixes import TInterBlockMatrix, DMatrix, KMatrix
 import numpy as np
 
 # test K_matrix
