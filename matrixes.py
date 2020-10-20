@@ -2,18 +2,23 @@ import numpy as np
 from math import floor
 from properties import Constants
 from interblock_matrixes import KMatrix, TInterBlockMatrix
+import utils as u
 
 
 def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
     nx, ny = t_matrix.shape
     out = np.zeros(nx * ny)
     for col_ind in range(ny):
-        out[col_ind] += t_matrix[-0.5, col_ind] * p_b
-        out[nx * ny - ny + col_ind] += t_matrix[nx-0.5, col_ind] * p_b
+        one_d = u.two_dim_index_to_one(0, col_ind, ny)
+        out[one_d] += t_matrix[-0.5, col_ind] * p_b
+        one_d = u.two_dim_index_to_one(nx-1, col_ind, ny)
+        out[one_d] += t_matrix[nx-0.5, col_ind] * p_b
     for row_ind in range(nx):
-        out[ny * row_ind] += t_matrix[row_ind, -0.5] * p_b
-        out[ny * (row_ind + 1) - 1] += t_matrix[ny-0.5, row_ind] * p_b
-    return out
+        one_d = u.two_dim_index_to_one(row_ind, 0, ny)
+        out[one_d] += t_matrix[row_ind, -0.5] * p_b
+        one_d = u.two_dim_index_to_one(row_ind, ny - 1, ny)
+        out[one_d] += t_matrix[row_ind, ny-0.5] * p_b
+    return out.reshape((-1, 1))
 
 
 def one_dim_index_to_two(m: int, ny: int) -> tuple:
@@ -30,16 +35,16 @@ def get_t_upd_matrix(t: TInterBlockMatrix) -> np.ndarray:
         out[d_i, d_i] += t[c_i[0], c_i[1] - 0.5]
         out[d_i, d_i] += t[c_i[0], c_i[1] + 0.5]
 
-        if 0 <= c_i[1] - 0.5:
+        if 0.5 <= c_i[1]:
             out[d_i, d_i - 1] = -1 * t[c_i[0], c_i[1] - 0.5]
 
-        if c_i[1] < ny-1:
+        if c_i[1] <= (ny - 1) - 0.5:
             out[d_i, d_i + 1] = -1 * t[c_i[0], c_i[1] + 0.5]
 
-        if 0 <= c_i[0] - 0.5:
+        if 0.5 <= c_i[0]:
             out[d_i, d_i - ny] = -1 * t[c_i[0] - 0.5, c_i[1]]
 
-        if c_i[0] < nx - 1:
+        if c_i[0] <= (nx - 1) - 0.5:
             out[d_i, d_i + ny] = -1 * t[c_i[0] + 0.5, c_i[1]]
 
     return out
@@ -65,10 +70,10 @@ def get_q_well(index1d_q: dict, nx: int, ny: int, s_o, s_w) -> tuple:
             so = 0
         if (so == 0) & (sw == 0):
             return q_w, q_o
-        q_w[key] = index1d_q[key] * sw
-        q_o[key] = index1d_q[key] * so
+        q_w[key] = index1d_q[key] * sw / (sw + so)
+        q_o[key] = index1d_q[key] * so / (sw + so)
 
-    return q_w, q_o
+    return q_w.reshape((-1, 1)), q_o.reshape((-1, 1))
 
 
 def get_b_s_w(consts: Constants, porosity) -> np.ndarray:
