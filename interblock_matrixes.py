@@ -25,15 +25,14 @@ class DMatrix:
         # major case - tuple
         if (type(item) == tuple) & (len(item) == 2):
             i, j = item
-
             # bound
-            if i < 0:
+            if i == -0.5:
                 return self.__d[0, j]
-            if i >= self.__d.shape[0] - 0.6:
+            if i == self.__d.shape[0] - 0.5:
                 return self.__d[self.__d.shape[0] - 1, j]
-            if j < 0:
+            if j == -0.5:
                 return self.__d[i, 0]
-            if j >= self.__d.shape[1] - 0.6:
+            if j == self.__d.shape[1] - 0.5:
                 return self.__d[i, self.__d.shape[1] - 1]
 
             if u.check_int(i) & u.check_half(j):
@@ -191,35 +190,35 @@ class TInterBlockMatrix:
         # major case - tuple
         if (type(item) == tuple) & (len(item) == 2):
             i, j = item
-            nx, ny = self.__k_matrix.shape
+            nx, ny = self.shape
             # here are bounds
             if self.__boundary_condition == 'const_pressure':
                 if (i == -0.5) & (j <= ny - 1) & (0 <= j) & u.check_int(j):
                     i = 0
                     out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
-                    out /= (self.__dx_matrix[floor(j)] + self.__dx_matrix[ceil(j)]) / 2
+                    out /= self.__dx_matrix[j]
                     return 2 * out
                     # return 0
                 # one of bound
                 if (i == nx - 0.5) & (j <= ny - 1) & (0 <= j) & u.check_int(j):
                     i = nx - 1
-                    out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
-                    out /= (self.__dx_matrix[floor(j)] + self.__dx_matrix[ceil(j)]) / 2
+                    out = self.__d_matrix[i, j] * self.__dy_matrix[j] * self.__k_matrix[i, j]
+                    out /= self.__dx_matrix[i]
                     return 2 * out
                     # return 0
 
                 # other 2 line bounds
                 if (j == -0.5) & (i <= nx - 1) & (0 <= i) & u.check_int(i):
                     j = 0
-                    out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
-                    out /= (self.__dy_matrix[floor(j)] + self.__dy_matrix[ceil(j)]) / 2
+                    out = self.__d_matrix[i, j] * self.__dx_matrix[i] * self.__k_matrix[i, j]
+                    out /= self.__dy_matrix[j]
                     return 2 * out
                     # return 0
                 # bound
                 if (j == ny - 0.5) & (i <= nx - 1) & (0 <= i) & u.check_int(i):
                     j = ny - 1
-                    out = self.__d_matrix[i, j] * self.__dx_matrix[floor(i)] * self.__k_matrix[i, j]
-                    out /= (self.__dy_matrix[floor(j)] + self.__dy_matrix[ceil(j)]) / 2
+                    out = self.__d_matrix[i, j] * self.__dx_matrix[i] * self.__k_matrix[i, j]
+                    out /= self.__dy_matrix[j]
                     return 2 * out
                     # return 0
             elif self.__boundary_condition == 'no_flux':
@@ -243,8 +242,8 @@ class TInterBlockMatrix:
                 return out
 
             elif u.check_half(i) & u.check_int(j):
-                out = self.__d_matrix[i, j] * self.__dy_matrix[floor(i)] * self.__k_matrix[i, j]
-                out /= (self.__dx_matrix[floor(j)] + self.__dx_matrix[ceil(j)]) / 2
+                out = self.__d_matrix[i, j] * self.__dy_matrix[floor(j)] * self.__k_matrix[i, j]
+                out /= (self.__dx_matrix[floor(j)] + self.__dx_matrix[ceil(i)]) / 2
                 return out
             else:
                 assert False, "wrong index, not int + int and a half-like int"
