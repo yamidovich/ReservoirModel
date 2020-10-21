@@ -9,7 +9,7 @@ class Env:
     def __init__(self, k_2d_matrix: np.ndarray, poir_2d_matrix: np.ndarray, depth_2d_matrix: np.ndarray,
                  satur_2d_matrix: np.ndarray,
                  const: Constants, well_positions: dict,
-                 boundary_cond: dict = {'o': 'no_flux', 'p': 'no_flux', 'w': 'no_flux'}
+                 boundary_cond: dict = {'o': 'no_flux', 'p': 'const_pressure', 'w': 'const_pressure'}
                  ):
         self.boundary_cond = boundary_cond
         self.__const = const
