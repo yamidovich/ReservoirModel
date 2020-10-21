@@ -8,8 +8,10 @@ import utils as u
 class Env:
     def __init__(self, k_2d_matrix: np.ndarray, poir_2d_matrix: np.ndarray, depth_2d_matrix: np.ndarray,
                  satur_2d_matrix: np.ndarray,
-                 const: Constants, well_positions: dict
+                 const: Constants, well_positions: dict,
+                 boundary_cond: dict = {'o': 'no_flux', 'p': 'no_flux', 'w': 'no_flux'}
                  ):
+        self.boundary_cond = boundary_cond
         self.__const = const
         k_2d_matrix *= const.k_avg()
         depth_2d_matrix *= const.depth_avg()
@@ -44,7 +46,7 @@ class Env:
                                                   dx_matrix=dx,
                                                   dy_matrix=dy,
                                                   d_matrix=depth_m,
-                                                  boundary_condition='const_pressure'
+                                                  boundary_condition=self.boundary_cond['p']
                                                   )
         t_upd_k_tilde = ma.get_t_upd_matrix(self.__t_k_tilde)
         self._inv_p_upd = np.linalg.inv(np.eye(self.__nx * self.__ny, dtype=float) +
@@ -57,7 +59,7 @@ class Env:
                                          dx_matrix=dx,
                                          dy_matrix=dy,
                                          d_matrix=depth_m,
-                                         boundary_condition='no_flux'
+                                         boundary_condition=self.boundary_cond['o']
                                          )
         self.__t_upd_k_s_o = ma.get_t_upd_matrix(t_k_s_o)
         self.__tri_matr_o = ma.diagonal_multidot([por_inv, b_s_o, v_matrix_inv])
@@ -68,7 +70,7 @@ class Env:
                                                 dx_matrix=dx,
                                                 dy_matrix=dy,
                                                 d_matrix=depth_m,
-                                                # boundary_condition='no_flux'
+                                                boundary_condition=self.boundary_cond['w']
                                                 )
         self.__t_upd_k_s_w = ma.get_t_upd_matrix(self.__t_k_s_w)
         self.__tri_matr_w = ma.diagonal_multidot([por_inv, b_s_w, v_matrix_inv])
@@ -104,7 +106,9 @@ class Env:
         self.__p_vec = p_vec_new
         self.__s_o_vec = s_o_vec_new
         self.__s_w_vec = s_w_vec_new
-        # TODO balance water and oil saturation
+        s_norm = self.__s_w_vec + self.__s_o_vec
+        self.__s_o_vec = s_o_vec_new / s_norm
+        self.__s_w_vec = s_w_vec_new / s_norm
 
     def s_w_as_2d(self):
         return self.__s_w_vec.reshape((self.__nx, self.__ny))
