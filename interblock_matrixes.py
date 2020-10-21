@@ -9,7 +9,7 @@ class DMatrix:
     so we have to call [1, 4.5] to get proper inter block value
     """
 
-    def __init__(self, d_values):
+    def __init__(self, d_values) -> object:
         self.__d = d_values
         self.shape = d_values.shape
 
