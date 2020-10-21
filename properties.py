@@ -1,6 +1,6 @@
 class Constants:
     def __init__(self):
-        self.__mu_water = 5.531e-4  # m^2 / s
+        self.__mu_water = 5.531e-6  # m^2 / s
         self.__mu_oil = 2.9e-4  # m^2 / s
         self.__B_w = 1.  # relative
         self.__B_o = 1.  # relative
