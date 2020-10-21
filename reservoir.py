@@ -2,6 +2,7 @@ import numpy as np
 import matrixes as ma
 import interblock_matrixes as i_ma
 from properties import Constants
+import utils as u
 
 
 class Env:
@@ -10,20 +11,24 @@ class Env:
                  const: Constants, well_positions: dict
                  ):
         self.__const = const
+        k_2d_matrix *= const.k_avg()
+        depth_2d_matrix *= const.depth_avg()
         self.__nx, self.__ny = k_2d_matrix.shape
         # some asserts for shape
         assert k_2d_matrix.shape == poir_2d_matrix.shape
-        assert poir_2d_matrix.shape == depth_2d_matrix
+        assert poir_2d_matrix.shape == depth_2d_matrix.shape
 
         # initializing base properties
         dy = np.ones(self.__ny) * const.dy()
         dx = np.ones(self.__nx) * const.dx()
 
-        self.__p_vec = np.ones((self.__nx * self.__ny, 1)) * const.p_0()
+        self.__p_vec = np.ones((self.__nx * self.__ny)).reshape((-1, 1)) * const.p_0()
         self.__s_o_vec = satur_2d_matrix.reshape((-1, 1))
         self.__s_w_vec = (np.ones(satur_2d_matrix.shape) - satur_2d_matrix).reshape((-1, 1))
+
         v_matrix = np.diag(const.dx() * const.dy() * depth_2d_matrix.reshape(-1))
         v_matrix_inv = ma.inverse_diag(v_matrix)
+
         por_mat_diag = np.diag(poir_2d_matrix.reshape(-1))
         por_inv = ma.inverse_diag(por_mat_diag)
         # build base matrices for computation
@@ -42,8 +47,8 @@ class Env:
                                                   boundary_condition='const_pressure'
                                                   )
         t_upd_k_tilde = ma.get_t_upd_matrix(self.__t_k_tilde)
-        self._inv_p_upd = np.linalg.inv(np.eye(self.__nx * self.__ny, dtype=float) + const.dt())
-        self._inv_p_upd *= self.__bpw_inv.dot(t_upd_k_tilde)
+        self._inv_p_upd = np.linalg.inv(np.eye(self.__nx * self.__ny, dtype=float) +
+                                        const.dt()*self.__bpw_inv.dot(t_upd_k_tilde))
         self.__b_rat = const.b_o() / const.b_w()
         # saturation of oil upd
         b_s_o = ma.get_b_s_o(consts=const, porosity=poir_2d_matrix)
@@ -70,27 +75,30 @@ class Env:
         # wor both saturation
         self.__two_diag_dot = ma.diagonal_multidot([v_matrix_inv, por_inv])
         # wells and q
-        self.__well_positions = well_positions
+        self.__well_positions = {u.two_dim_index_to_one(i=k[0], j=k[1], ny=self.__ny):
+                                     well_positions[k] for k in well_positions}
+        self.__q_o = None
+        self.__q_w = None
 
     def step(self):
         # q in wells
-        q_w, q_o = ma.get_q_well(self.__well_positions,
+        self.__q_w, self.__q_o = ma.get_q_well(self.__well_positions,
                                  s_w=self.__s_w_vec, s_o=self.__s_o_vec,
                                  nx=self.__nx, ny=self.__ny)
         # boundary conditions
         q_tilde_p = ma.get_q_bound(self.__t_k_tilde, self.__const.p_0())
         q_tilde_w = ma.get_q_bound(self.__t_k_s_w, self.__const.p_0())
         # p upd
-        p_vec_new = self.__p_vec + self.__const.dt() * self.__bpw_inv.dot(self.__b_rat * q_o + q_w + q_tilde_p)
+        p_vec_new = self.__p_vec + self.__const.dt() * self.__bpw_inv.dot(self.__b_rat * self.__q_o + self.__q_w + q_tilde_p)
         p_vec_new = self._inv_p_upd.dot(p_vec_new)
         # saturation upd
         s_o_vec_new = self.__s_o_vec + self.__tri_matr_o.dot(p_vec_new - self.__p_vec) * self.__const.b_o()
         s_o_vec_new += self.__const.dt() * self.__const.b_o() * self.__two_diag_dot.dot(
-            -1 * self.__t_upd_k_s_o.dot(p_vec_new) + q_o)
+            -1 * self.__t_upd_k_s_o.dot(p_vec_new) + self.__q_o)
 
         s_w_vec_new = self.__s_w_vec + self.__tri_matr_w.dot(p_vec_new - self.__p_vec) * self.__const.b_w()
         s_w_vec_new += self.__const.dt() * self.__const.b_w() * self.__two_diag_dot.dot(
-            -1 * self.__t_upd_k_s_w.dot(p_vec_new) + q_w + q_tilde_w)
+            -1 * self.__t_upd_k_s_w.dot(p_vec_new) + self.__q_w + q_tilde_w)
 
         # upd self var
         self.__p_vec = p_vec_new
@@ -106,3 +114,9 @@ class Env:
 
     def p_as_2d(self):
         return self.__p_vec.reshape((self.__nx, self.__ny))
+
+    def q_o_total(self):
+        return -1 * self.__q_o.sum()
+
+    def q_w_total(self):
+        return -1 * self.__q_w.sum()
