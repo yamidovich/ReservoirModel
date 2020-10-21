@@ -10,7 +10,7 @@ class Constants:
         self.__k_r_o = 1.  # relative
         self.__k_r_w = 1.  # relative
         self.__k_avg = 1 * 1.987e-13  # 1 darcy to m^2
-        self.__dt = 1    # s
+        self.__dt = 1.    # s
         self.__dx = 5.  # m
         self.__dy = 5.  # m
         self.__d_avg = 50.  # m
