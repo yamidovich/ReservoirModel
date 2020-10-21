@@ -105,10 +105,10 @@ class Env:
         # upd self var
         self.__p_vec = p_vec_new
         self.__s_o_vec = s_o_vec_new
-        self.__s_w_vec = s_w_vec_new
-        s_norm = self.__s_w_vec + self.__s_o_vec
-        self.__s_o_vec = s_o_vec_new / s_norm
-        self.__s_w_vec = s_w_vec_new / s_norm
+        self.__s_w_vec = np.ones(s_w_vec_new.shape) - self.__s_o_vec
+        # s_norm = self.__s_w_vec + self.__s_o_vec
+        # self.__s_o_vec = s_o_vec_new / s_norm
+        # self.__s_w_vec = s_w_vec_new / s_norm
 
     def s_w_as_2d(self):
         return self.__s_w_vec.reshape((self.__nx, self.__ny))
