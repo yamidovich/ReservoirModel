@@ -9,7 +9,7 @@ class Constants:
         self.__c_r = 1e-6 / 6894  # Pa^-1 https://www.sciencedirect.com/topics/engineering/formation-compressibility
         self.__k_r_o = 1.  # relative
         self.__k_r_w = 1.  # relative
-        self.__k_avg = 1 * 1.987e-13  # 1 darcy to m^2
+        self.__k_avg = 2e-1 * 1.987e-13  # 1 darcy to m^2
         self.__dt = 1.    # s
         self.__dx = 5.  # m
         self.__dy = 5.  # m
