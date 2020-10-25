@@ -50,18 +50,18 @@ class Env:
                                                   )
         t_upd_k_tilde = ma.get_t_upd_matrix(self.__t_k_tilde)
         self._inv_p_upd = np.linalg.inv(np.eye(self.__nx * self.__ny, dtype=float) +
-                                        const.dt()*self.__bpw_inv.dot(t_upd_k_tilde))
+                                        const.dt() * self.__bpw_inv.dot(t_upd_k_tilde))
         self.__b_rat = const.b_o() / const.b_w()
         # saturation of oil upd
         b_s_o = ma.get_b_s_o(consts=const, porosity=poir_2d_matrix)
         k_s_o = ma.get_k_s_o(consts=const, k=k_matrix_0)
-        t_k_s_o = i_ma.TInterBlockMatrix(k_matrix=k_s_o,
-                                         dx_matrix=dx,
-                                         dy_matrix=dy,
-                                         d_matrix=depth_m,
-                                         boundary_condition=self.boundary_cond['o']
-                                         )
-        self.__t_upd_k_s_o = ma.get_t_upd_matrix(t_k_s_o)
+        self.__t_k_s_o = i_ma.TInterBlockMatrix(k_matrix=k_s_o,
+                                                dx_matrix=dx,
+                                                dy_matrix=dy,
+                                                d_matrix=depth_m,
+                                                boundary_condition=self.boundary_cond['o']
+                                                )
+        self.__t_upd_k_s_o = ma.get_t_upd_matrix(self.__t_k_s_o)
         self.__tri_matr_o = ma.diagonal_multidot([por_inv, b_s_o, v_matrix_inv])
         # saturation of water upd
         b_s_w = ma.get_b_s_o(consts=const, porosity=poir_2d_matrix)
@@ -85,27 +85,30 @@ class Env:
     def step(self):
         # q in wells
         self.__q_w, self.__q_o = ma.get_q_well(self.__well_positions,
-                                 s_w=self.__s_w_vec, s_o=self.__s_o_vec,
-                                 nx=self.__nx, ny=self.__ny)
+                                               s_w=self.__s_w_vec, s_o=self.__s_o_vec,
+                                               nx=self.__nx, ny=self.__ny)
         # boundary conditions
         q_tilde_p = ma.get_q_bound(self.__t_k_tilde, self.__const.p_0())
         q_tilde_w = ma.get_q_bound(self.__t_k_s_w, self.__const.p_0())
+        q_tilde_o = ma.get_q_bound(self.__t_k_s_o, self.__const.p_0())
         # p upd
-        p_vec_new = self.__p_vec + self.__const.dt() * self.__bpw_inv.dot(self.__b_rat * self.__q_o + self.__q_w + q_tilde_p)
+        p_vec_new = self.__p_vec + self.__const.dt() * self.__bpw_inv.dot(
+            self.__b_rat * self.__q_o + self.__q_w + q_tilde_p)
         p_vec_new = self._inv_p_upd.dot(p_vec_new)
         # saturation upd
-        s_o_vec_new = self.__s_o_vec + self.__tri_matr_o.dot(p_vec_new - self.__p_vec) * self.__const.b_o()
+        s_o_vec_new = self.__s_o_vec - (self.__const.c_o() + self.__const.c_r()) * (p_vec_new - self.__p_vec) * self.__s_o_vec
         s_o_vec_new += self.__const.dt() * self.__const.b_o() * self.__two_diag_dot.dot(
-            -1 * self.__t_upd_k_s_o.dot(p_vec_new) + self.__q_o)
+            -1 * self.__t_upd_k_s_o.dot(p_vec_new) + self.__q_o + q_tilde_o)
 
-        s_w_vec_new = self.__s_w_vec + self.__tri_matr_w.dot(p_vec_new - self.__p_vec) * self.__const.b_w()
+        s_w_vec_new = self.__s_w_vec - (self.__const.c_w() + self.__const.c_r()) * (p_vec_new - self.__p_vec) * self.__s_w_vec
         s_w_vec_new += self.__const.dt() * self.__const.b_w() * self.__two_diag_dot.dot(
             -1 * self.__t_upd_k_s_w.dot(p_vec_new) + self.__q_w + q_tilde_w)
 
         # upd self var
         self.__p_vec = p_vec_new
         self.__s_o_vec = s_o_vec_new
-        self.__s_w_vec = np.ones(s_w_vec_new.shape) - self.__s_o_vec
+        self.__s_w_vec = s_w_vec_new
+        # self.__s_o_vec = np.ones(s_w_vec_new.shape) - self.__s_w_vec
         # s_norm = self.__s_w_vec + self.__s_o_vec
         # self.__s_o_vec = s_o_vec_new / s_norm
         # self.__s_w_vec = s_w_vec_new / s_norm
