@@ -96,6 +96,7 @@ class Env:
             self.__b_rat * self.__q_o + self.__q_w + q_tilde_p)
         p_vec_new = self._inv_p_upd.dot(p_vec_new)
         # saturation upd
+        # todo make saturation update implicit
         s_o_vec_new = self.__s_o_vec - (self.__const.c_o() + self.__const.c_r()) * (p_vec_new - self.__p_vec) * self.__s_o_vec
         s_o_vec_new += self.__const.dt() * self.__const.b_o() * self.__two_diag_dot.dot(
             -1 * self.__t_upd_k_s_o.dot(p_vec_new) + self.__q_o + q_tilde_o)
