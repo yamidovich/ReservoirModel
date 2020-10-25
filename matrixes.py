@@ -70,8 +70,8 @@ def get_q_well(index1d_q: dict, nx: int, ny: int, s_o, s_w) -> tuple:
             so = 0
         if (so == 0) & (sw == 0):
             return q_w, q_o
-        q_w[key] = index1d_q[key] * sw / (sw + so)
-        q_o[key] = index1d_q[key] * so / (sw + so)
+        q_w[key] = index1d_q[key] * sw
+        q_o[key] = index1d_q[key] * so
 
     return q_w.reshape((-1, 1)), q_o.reshape((-1, 1))
 
