@@ -84,33 +84,38 @@ class Env:
 
     def step(self):
         # q in wells
-        self.__q_w, self.__q_o = ma.get_q_well(self.__well_positions,
-                                               s_w=self.__s_w_vec, s_o=self.__s_o_vec,
-                                               nx=self.__nx, ny=self.__ny)
-        # boundary conditions
+        # self.__q_w, self.__q_o = ma.get_q_well(self.__well_positions, s_w=self.__s_w_vec, s_o=self.__s_o_vec,
+        #                                        nx=self.__nx, ny=self.__ny)
+        self.__q_o = ma.get_q_well_total(self.__well_positions, nx=self.__nx, ny=self.__ny) * self.__s_o_vec
+        self.__q_w = ma.get_q_well_total(self.__well_positions, nx=self.__nx, ny=self.__ny) * self.__s_w_vec
         q_tilde_p = ma.get_q_bound(self.__t_k_tilde, self.__const.p_0())
         q_tilde_w = ma.get_q_bound(self.__t_k_s_w, self.__const.p_0())
         q_tilde_o = ma.get_q_bound(self.__t_k_s_o, self.__const.p_0())
-        # p upd
+
+
+        # boundary conditions
+
         p_vec_new = self.__p_vec + self.__const.dt() * self.__bpw_inv.dot(
-            self.__b_rat * self.__q_o + self.__q_w + q_tilde_p)
+            self.__b_rat * self.__q_o * self.__s_o_vec + self.__q_w * self.__s_w_vec + q_tilde_p)
         p_vec_new = self._inv_p_upd.dot(p_vec_new)
         # saturation upd
         s_o_div = np.ones(self.__s_o_vec.shape) + (self.__const.c_o() + self.__const.c_r()) * (p_vec_new - self.__p_vec)
+        s_o_div -= self.__const.dt() * self.__const.b_o() * self.__two_diag_dot.dot(self.__q_o)
         s_o_vec_new = self.__s_o_vec + self.__const.dt() * self.__const.b_o() * self.__two_diag_dot.dot(
-            -1 * self.__t_upd_k_s_o.dot(p_vec_new) + self.__q_o + q_tilde_o)
+            -1 * self.__t_upd_k_s_o.dot(p_vec_new) + q_tilde_o)
         s_o_vec_new /= s_o_div
 
         s_w_div = np.ones(self.__s_w_vec.shape) + (self.__const.c_w() + self.__const.c_r()) * (p_vec_new - self.__p_vec)
+        s_w_div -= self.__const.dt() * self.__const.b_w() * self.__two_diag_dot.dot(self.__q_w)
         s_w_vec_new = self.__s_w_vec + self.__const.dt() * self.__const.b_w() * self.__two_diag_dot.dot(
-            -1 * self.__t_upd_k_s_w.dot(p_vec_new) + self.__q_w + q_tilde_w)
+            -1 * self.__t_upd_k_s_w.dot(p_vec_new) + q_tilde_w)
         s_w_vec_new /= s_w_div
 
         # upd self var
         self.__p_vec = p_vec_new
         self.__s_o_vec = s_o_vec_new
         self.__s_w_vec = s_w_vec_new
-        # self.__s_o_vec = np.ones(s_w_vec_new.shape) - self.__s_w_vec
+        self.__s_w_vec = np.ones(s_w_vec_new.shape) - self.__s_o_vec
         # s_norm = self.__s_w_vec + self.__s_o_vec
         # self.__s_o_vec = s_o_vec_new / s_norm
         # self.__s_w_vec = s_w_vec_new / s_norm
