@@ -54,10 +54,6 @@ def get_b_p_w(porosity, consts: Constants = Constants()) -> np.ndarray:
     return np.diag(porosity.reshape(-1) * consts.c_t() / consts.b_w())
 
 
-def get_k_tilde(consts: Constants, k: KMatrix) -> KMatrix:
-    return k * (consts.k_r_o() / consts.mu_oil() / consts.b_w() + consts.k_r_w() / consts.mu_water() / consts.b_w())
-
-
 def get_q_well(index1d_q: dict, nx: int, ny: int, s_o, s_w) -> tuple:
     q_w = np.zeros((nx * ny))
     q_o = np.zeros((nx * ny))
@@ -76,6 +72,13 @@ def get_q_well(index1d_q: dict, nx: int, ny: int, s_o, s_w) -> tuple:
     return q_w.reshape((-1, 1)), q_o.reshape((-1, 1))
 
 
+def get_q_well_total(index1d_q: dict, nx: int, ny: int) -> np.ndarray:
+    out = np.zeros((nx * ny))
+    for key in index1d_q:
+        out[key] = index1d_q[key]
+    return out.reshape((-1, 1))
+
+
 def get_b_s_w(consts: Constants, porosity) -> np.ndarray:
     return np.diag(porosity.reshape(-1) * (consts.c_w() + consts.c_r()) / consts.b_w())
 
@@ -89,7 +92,11 @@ def get_k_s_w(consts: Constants, k: KMatrix) -> KMatrix:
 
 
 def get_k_s_o(consts: Constants, k: KMatrix) -> KMatrix:
-    return k * consts.k_r_o() / consts.mu_water() / consts.b_o()
+    return k * consts.k_r_o() / consts.mu_oil() / consts.b_o()
+
+
+def get_k_tilde(consts: Constants, k: KMatrix) -> KMatrix:
+    return get_k_s_o(consts, k) + get_k_s_w(consts, k)
 
 
 def inverse_diag(x: np.ndarray):
