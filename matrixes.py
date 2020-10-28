@@ -1,7 +1,7 @@
 import numpy as np
 from math import floor
 from properties import Constants
-from interblock_matrixes import KMatrix, TInterBlockMatrix
+from interblock_matrixes import KMatrix, TInterBlockMatrix, DMatrix
 import utils as u
 
 
@@ -11,14 +11,20 @@ def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
     for col_ind in range(ny):
         one_d = u.two_dim_index_to_one(0, col_ind, ny)
         out[one_d] += t_matrix[-0.5, col_ind] * p_b
-        one_d = u.two_dim_index_to_one(nx-1, col_ind, ny)
-        out[one_d] += t_matrix[nx-0.5, col_ind] * p_b
+        one_d = u.two_dim_index_to_one(nx - 1, col_ind, ny)
+        out[one_d] += t_matrix[nx - 0.5, col_ind] * p_b
     for row_ind in range(nx):
         one_d = u.two_dim_index_to_one(row_ind, 0, ny)
         out[one_d] += t_matrix[row_ind, -0.5] * p_b
         one_d = u.two_dim_index_to_one(row_ind, ny - 1, ny)
-        out[one_d] += t_matrix[row_ind, ny-0.5] * p_b
+        out[one_d] += t_matrix[row_ind, ny - 0.5] * p_b
     return out.reshape((-1, 1))
+
+
+def get_q_bound_const_p_well(j_matrix: np.ndarray, p_well):
+    out = np.diag(j_matrix).copy().reshape((-1, 1))
+    out *= p_well
+    return out
 
 
 def one_dim_index_to_two(m: int, ny: int) -> tuple:
@@ -113,4 +119,45 @@ def diagonal_multidot(maxtrixes: list):
     for i in range(out.shape[0]):
         for m in maxtrixes:
             out[i, i] *= m[i, i]
+    return out
+
+
+def get_r_ref(i: int, j: int, depth: DMatrix, dx: np.array):
+    out = 1. / dx[i] + np.pi / depth[i, j]
+    out = 1. / out
+    return out
+
+
+def get_j_matrix_w(two_d_well_index_rw_scale: dict, nx: int, ny: int, const: Constants, k_matrix: KMatrix,
+                   depth: DMatrix,
+                   dx: np.array):
+    out = np.zeros((nx * ny, nx * ny), dtype=float)
+    for i, j in two_d_well_index_rw_scale:
+        one_d_ind = u.two_dim_index_to_one(i, j, ny)
+        r_ref = get_r_ref(i=i, j=j, depth=depth, dx=dx)
+        r_well = two_d_well_index_rw_scale[(i, j)] * const.r_well()
+        out[one_d_ind, one_d_ind] = 4 * np.pi / const.b_w() / const.mu_water() * k_matrix[i, j] * (r_ref * r_well) \
+                                    / (r_ref + r_well)
+    return out
+
+
+def get_j_matrix_o(two_d_well_index_rw_scale: dict, nx: int, ny: int, const: Constants, k_matrix: KMatrix,
+                   depth: DMatrix,
+                   dx: np.array):
+    out = np.zeros((nx * ny, nx * ny), dtype=float)
+    for i, j in two_d_well_index_rw_scale:
+        one_d_ind = u.two_dim_index_to_one(i, j, ny)
+        r_ref = get_r_ref(i=i, j=j, depth=depth, dx=dx)
+        r_well = two_d_well_index_rw_scale[(i, j)] * const.r_well()
+        out[one_d_ind, one_d_ind] = 4 * np.pi / const.b_o() / const.mu_oil() * k_matrix[i, j] * (r_ref * r_well) \
+                                    / (r_ref + r_well)
+    return out
+
+
+def get_q_const_p(j_matrix: np.ndarray, p_vec: np.ndarray, p_well: float, two_d_well_index_rw_scale: dict, ny: int):
+    out = np.zeros((j_matrix.shape[0], 1))
+
+    for i, j in two_d_well_index_rw_scale:
+        diag = u.two_dim_index_to_one(i, j, ny)
+        out[diag, 0] = (p_well - p_vec[diag, 0]) * j_matrix[diag, diag]
     return out
