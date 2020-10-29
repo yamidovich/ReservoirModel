@@ -13,7 +13,7 @@ class Constants:
         self.__dy = 1.  # m
         self.__d_avg = 5.  # m
         self.__p_0 = 4e4 * 6894  # psi to Pa
-        self.__r_well = 0.1  # m
+        self.__r_well = 1  # m
         self.__delta_p = 20 * 6894 # psi to Pa
 
     def dx(self):
