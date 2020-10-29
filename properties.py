@@ -7,15 +7,13 @@ class Constants:
         self.__c_o = 15.8e-10   # Pa^-1 https://www.sciencedirect.com/topics/engineering/oil-compressibility#:~:text=Oil%20compressibility%20(also%20called%20isothermal,10−6%20psi−1.
         self.__c_w = 15.8e-10  # Pa^-1
         self.__c_r = 1e-6 / 6894  # Pa^-1 https://www.sciencedirect.com/topics/engineering/formation-compressibility
-        self.__k_r_o = 1.  # relative
-        self.__k_r_w = 1.  # relative
         self.__k_avg = 1e-1 * 1.987e-13  # 1 darcy to m^2
         self.__dt = 0.1  # s
         self.__dx = 1.  # m
         self.__dy = 1.  # m
         self.__d_avg = 5.  # m
         self.__p_0 = 4e4 * 6894  # psi to Pa
-        self.__r_well = 0.1  # m
+        self.__r_well = 1  # m
         self.__delta_p = 20 * 6894 # psi to Pa
 
     def dx(self):
@@ -45,11 +43,8 @@ class Constants:
     def b_o(self):
         return self.__B_o
 
-    def k_r_o(self):
-        return self.__k_r_o
-
-    def k_r_w(self):
-        return self.__k_r_w
+    def k_r_liq(self, x):
+        return x
 
     def k_avg(self):
         return self.__k_avg
