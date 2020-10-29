@@ -15,7 +15,7 @@ class Env:
         # wells locations
         self.__two_d_well_index_rw_scale = two_d_well_index_rw_scale
         self.__wells_const_q = well_positions
-        self.__well_positions_cr = {u.two_dim_index_to_one(i=k[0], j=k[1], ny=self.__ny):
+        self.__wells_const_q = {u.two_dim_index_to_one(i=k[0], j=k[1], ny=self.__ny):
                                         self.__wells_const_q[k] for k in self.__wells_const_q}
         self.boundary_cond = boundary_cond
         self.__const = const
@@ -122,10 +122,10 @@ class Env:
     def step(self):
         # q in wells
         self.upd_params()
-        self.__q_w, self.__q_o = ma.get_q_well(self.__well_positions_cr, s_w=self.__s_w_vec, s_o=self.__s_o_vec,
+        self.__q_w, self.__q_o = ma.get_q_well(self.__wells_const_q, s_w=self.__s_w_vec, s_o=self.__s_o_vec,
                                                nx=self.__nx, ny=self.__ny)
-        self.__q_o = ma.get_q_well_total(self.__well_positions_cr, nx=self.__nx, ny=self.__ny) * self.__s_o_vec
-        self.__q_w = ma.get_q_well_total(self.__well_positions_cr, nx=self.__nx, ny=self.__ny) * self.__s_w_vec
+        self.__q_o = ma.get_q_well_total(self.__wells_const_q, nx=self.__nx, ny=self.__ny) * self.__s_o_vec
+        self.__q_w = ma.get_q_well_total(self.__wells_const_q, nx=self.__nx, ny=self.__ny) * self.__s_w_vec
         # boundary conditions
         q_tilde_p = ma.get_q_bound(self.__t_k_tilde, self.__const.p_0())
         q_tilde_w = ma.get_q_bound(self.__t_k_s_w, self.__const.p_0())
@@ -186,7 +186,8 @@ class Env:
     def set_wells_radius_ratio(self, upd_for_r_ratio):
         # firstly let's check of there is no extra wells to be opened)
         for nk in upd_for_r_ratio:
-            assert nk not in self.__well_positions_cr
+            assert nk in self.__two_d_well_index_rw_scale
         # then let's upd it
         for key in upd_for_r_ratio:
-            self.__well_positions_cr[u.two_dim_index_to_one(i=key[0], j=key[1], ny=self.__ny)] = upd_for_r_ratio[key]
+            self.__two_d_well_index_rw_scale[key] = upd_for_r_ratio[key]
+        self.upd_params()
