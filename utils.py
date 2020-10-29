@@ -44,7 +44,7 @@ def one_d_index_to_two(one_d: int, ny: int):
 
 
 def plot_env_state_and_hist(n_it: int, upd_plot_freq: int, env: Env, q_w_rate: list, q_o_rate: list,
-                            const_p_wells: dict, s_o_hist: dict, s_w_hist: dict, neibours: list,
+                            const_p_wells: dict, s_o_hist: dict, s_w_hist: dict, s_o_matrix_history: list, neibours: list,
                             saturation_matrix_0: np.ndarray, const, nx, ny):
     for i in range(n_it):
         env.step()
@@ -55,7 +55,7 @@ def plot_env_state_and_hist(n_it: int, upd_plot_freq: int, env: Env, q_w_rate: l
             s_w = env.s_w_as_2d()
             q_w_rate.append(env.q_w_total())
             q_o_rate.append(env.q_o_total())
-
+            s_o_matrix_history.append(s_o)
             for key in const_p_wells:
                 s_o_hist[key].append(s_o[key[0], key[1]])
                 s_w_hist[key].append(s_w[key[0], key[1]])
@@ -88,6 +88,8 @@ def plot_env_state_and_hist(n_it: int, upd_plot_freq: int, env: Env, q_w_rate: l
                 ax[2][0].plot(s_w_hist[key], label=f'water_satur, {key}')
             ax[2][0].set_title('Oil and water satur')
             ax[2][0].legend()
+            ax[2][0].hlines(0, xmin=0, xmax=len(s_o_hist[key])-1, linestyles='dashed')
+            ax[2][0].hlines(1, xmin=0, xmax=len(s_o_hist[key])-1, linestyles='dashed')
 
             ax[2][1].plot(q_o_rate, label='oil rate')
             ax[2][1].plot(q_w_rate, label='water rate')
