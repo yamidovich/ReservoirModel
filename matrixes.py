@@ -93,16 +93,16 @@ def get_b_s_o(consts: Constants, porosity) -> np.ndarray:
     return np.diag(porosity.reshape(-1) * (consts.c_o() + consts.c_r()) / consts.b_o())
 
 
-def get_k_s_w(consts: Constants, k: KMatrix) -> KMatrix:
-    return k * consts.k_r_w() / consts.mu_water() / consts.b_w()
+def get_k_s_w(consts: Constants, k_with_rel: KMatrix) -> KMatrix:
+    return k_with_rel / consts.mu_water() / consts.b_w()
 
 
-def get_k_s_o(consts: Constants, k: KMatrix) -> KMatrix:
-    return k * consts.k_r_o() / consts.mu_oil() / consts.b_o()
+def get_k_s_o(consts: Constants, k_with_rel: KMatrix) -> KMatrix:
+    return k_with_rel / consts.mu_oil() / consts.b_o()
 
 
-def get_k_tilde(consts: Constants, k: KMatrix) -> KMatrix:
-    return get_k_s_o(consts, k) + get_k_s_w(consts, k)
+def get_k_tilde(consts: Constants, k_oil_with_rel: KMatrix, k_wat_with_rel: KMatrix) -> KMatrix:
+    return get_k_s_o(consts, k_oil_with_rel) + get_k_s_w(consts, k_wat_with_rel)
 
 
 def inverse_diag(x: np.ndarray):
