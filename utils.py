@@ -112,7 +112,7 @@ def plot_env_state_and_hist(n_it: int, upd_plot_freq: int, env: Env, q_w_rate: l
                 s_o_hist[key].append(s_o[key[0], key[1]])
                 s_w_hist[key].append(s_w[key[0], key[1]])
 
-            plot_stuff_iter(q_w_rate=q_w_rate, q_o_rate=q_o_rate, const_p_wells=const_p_wells, s_o_hist=s_o_hist,
+            plot_stuff_iter(q_w_rate=q_w_rate, q_o_rate=q_o_rate, const_p_wells_keys=const_p_wells, s_o_hist=s_o_hist,
                             s_w_hist=s_w_hist, s_o_matrix_history=s_o_matrix_history, neibours=neibours,
                             p_matrix_history=p_matrix_history
                             )

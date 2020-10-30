@@ -71,11 +71,12 @@ class Env:
         # assert self._inv_p_upd is not None
 
     def upd_params(self):
-        k_rel_vec = np.vectorize(self.__const.k_r_liq)
+        k_rel_vec = np.vectorize(self.__const.k_r_o)
         k_values_oil = k_rel_vec(self.__s_o_vec.reshape((self.__nx, self.__ny))) * self.__k_2d_matrix
-        k_values_water = k_rel_vec(self.__s_w_vec.reshape((self.__nx, self.__ny))) * self.__k_2d_matrix
         k_matrix_o = i_ma.KMatrix(k_values=k_values_oil, dy_matrix=self.__dy, dx_matrix=self.__dx)
 
+        k_rel_vec = np.vectorize(self.__const.k_r_w)
+        k_values_water = k_rel_vec(self.__s_w_vec.reshape((self.__nx, self.__ny))) * self.__k_2d_matrix
         k_matrix_w = i_ma.KMatrix(k_values=k_values_water, dy_matrix=self.__dy, dx_matrix=self.__dx)
 
         k_tilde = ma.get_k_tilde(consts=self.__const, k_oil_with_rel=k_matrix_o, k_wat_with_rel=k_matrix_w)

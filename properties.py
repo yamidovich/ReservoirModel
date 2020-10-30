@@ -16,7 +16,14 @@ class Constants:
         self.__r_well = 0.05  # m
         self.__delta_p = 20 * 6894  # psi to Pa
 
-    def k_r_liq(self, x):
+    def k_r_o(self, s_o):
+        trh = 0.3
+        if s_o < (1 - trh):
+            return s_o / (1 - trh)
+        else:
+            return 1
+
+    def k_r_w(self, x):
         b_0 = 0.001
         trh = 0.3
         if x < trh:
