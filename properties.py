@@ -13,8 +13,16 @@ class Constants:
         self.__dy = 1.  # m
         self.__d_avg = 5.  # m
         self.__p_0 = 4e4 * 6894  # psi to Pa
-        self.__r_well = 1  # m
-        self.__delta_p = 20 * 6894 # psi to Pa
+        self.__r_well = 0.05  # m
+        self.__delta_p = 20 * 6894  # psi to Pa
+
+    def k_r_liq(self, x):
+        b_0 = 0.001
+        trh = 0.3
+        if x < trh:
+            return b_0 / trh * x
+        else:
+            return 0.03 + (1 - b_0) / (1 - trh) * x
 
     def dx(self):
         return float(self.__dx)
@@ -43,8 +51,6 @@ class Constants:
     def b_o(self):
         return self.__B_o
 
-    def k_r_liq(self, x):
-        return x
 
     def k_avg(self):
         return self.__k_avg
