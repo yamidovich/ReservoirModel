@@ -8,28 +8,30 @@ class Constants:
         self.__c_w = 15.8e-10  # Pa^-1
         self.__c_r = 1e-6 / 6894  # Pa^-1 https://www.sciencedirect.com/topics/engineering/formation-compressibility
         self.__k_avg = 1e-1 * 1.987e-13  # 1 darcy to m^2
-        self.__dt = 0.1  # s
+        self.__dt = 0.01  # s
         self.__dx = 1.  # m
         self.__dy = 1.  # m
         self.__d_avg = 5.  # m
         self.__p_0 = 4e4 * 6894  # psi to Pa
+        self.__p_b = 4.1e4 * 6894  # psi to Pa
         self.__r_well = 0.05  # m
         self.__delta_p = 20 * 6894  # psi to Pa
 
     def k_r_o(self, s_o):
-        trh = 0.3
-        if s_o < (1 - trh):
-            return s_o / (1 - trh)
-        else:
-            return 1
-
-    def k_r_w(self, x):
         b_0 = 0.001
         trh = 0.3
-        if x < trh:
-            return b_0 / trh * x
+        if s_o < trh:
+            return b_0 / trh * s_o
         else:
-            return 0.03 + (1 - b_0) / (1 - trh) * x
+            return b_0 + (1 - b_0) / (1 - trh) * (s_o - trh)
+
+    def k_r_w(self, s_w):
+        b_0 = 0.001
+        trh = 0.3
+        if s_w < trh:
+            return b_0 / trh * s_w
+        else:
+            return b_0 + (1 - b_0) / (1 - trh) * (s_w - trh)
 
     def dx(self):
         return float(self.__dx)
@@ -73,6 +75,9 @@ class Constants:
 
     def p_0(self):
         return self.__p_0
+
+    def p_b(self):
+        return self.__p_b
 
     def r_well(self):
         return self.__r_well
