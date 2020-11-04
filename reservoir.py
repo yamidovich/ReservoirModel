@@ -89,7 +89,7 @@ class Env:
         self.__j_w = ma.get_j_matrix_w(self.__two_d_well_index_rw_scale, nx=self.__nx, ny=self.__ny,
                                        const=self.__const, k_matrix=k_matrix_w,
                                        depth=self.__depth_m, dx=self.__dx)
-        self.__j_o = ma.get_j_matrix_w(self.__two_d_well_index_rw_scale, nx=self.__nx, ny=self.__ny,
+        self.__j_o = ma.get_j_matrix_o(self.__two_d_well_index_rw_scale, nx=self.__nx, ny=self.__ny,
                                        const=self.__const, k_matrix=k_matrix_o,
                                        depth=self.__depth_m, dx=self.__dx)
         # TODO what if we can speed up this inverse
@@ -130,9 +130,9 @@ class Env:
         self.__q_o = ma.get_q_well_total(self.__wells_const_q, nx=self.__nx, ny=self.__ny) * self.__s_o_vec
         self.__q_w = ma.get_q_well_total(self.__wells_const_q, nx=self.__nx, ny=self.__ny) * self.__s_w_vec
         # boundary conditions
-        q_tilde_p = ma.get_q_bound(self.__t_k_tilde, self.__const.p_0())
-        q_tilde_w = ma.get_q_bound(self.__t_k_s_w, self.__const.p_0())
-        q_tilde_o = ma.get_q_bound(self.__t_k_s_o, self.__const.p_0())
+        q_tilde_p = ma.get_q_bound(self.__t_k_tilde, self.__const.p_b())
+        q_tilde_w = ma.get_q_bound(self.__t_k_s_w, self.__const.p_b())
+        q_tilde_o = ma.get_q_bound(self.__t_k_s_o, self.__const.p_b())
         # const pressure well
         q_tilde_p_cpo = ma.get_q_bound_const_p_well(self.__j_o, self.__p_well)
         q_tilde_p_cpw = ma.get_q_bound_const_p_well(self.__j_w, self.__p_well)
@@ -194,3 +194,8 @@ class Env:
         for key in upd_for_r_ratio:
             self.__two_d_well_index_rw_scale[key] = upd_for_r_ratio[key]
         self.upd_params()
+
+    def set_saturation_oil(self, s_o_new_matrix, upd_water=True):
+        self.__s_o_vec = s_o_new_matrix.reshape((-1, 1))
+        if upd_water:
+            self.__s_w_vec = np.ones(self.__s_o_vec.shape) - self.__s_o_vec
