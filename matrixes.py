@@ -8,7 +8,7 @@ import utils as u
 def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
     nx, ny = t_matrix.shape
     out = np.zeros(nx * ny)
-    if ny >= 1:
+    if ny > 1:
         for col_ind in range(ny):
             one_d = u.two_dim_index_to_one(0, col_ind, ny)
             out[one_d] += t_matrix[-0.5, col_ind] * p_b

@@ -12,6 +12,9 @@ class Env:
                  two_d_well_index_rw_scale: dict,
                  boundary_cond: str = 'const_pressure'
                  ):
+        # comes out of imput
+
+        self.__nx, self.__ny = k_2d_matrix.shape
         # wells locations
         self.__two_d_well_index_rw_scale = two_d_well_index_rw_scale
         self.__wells_const_q = well_positions
@@ -22,7 +25,6 @@ class Env:
         # properties will not change at all
 
         self.__b_rat = self.__const.b_o() / self.__const.b_w()
-        self.__nx, self.__ny = k_2d_matrix.shape
         self.__dy = np.ones(self.__ny) * const.dy()
         self.__dx = np.ones(self.__nx) * const.dx()
         self.__poir_2d_matrix = poir_2d_matrix

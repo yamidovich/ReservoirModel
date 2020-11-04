@@ -243,7 +243,7 @@ class TInterBlockMatrix:
 
             elif u.check_half(i) & u.check_int(j):
                 out = self.__d_matrix[i, j] * self.__dy_matrix[floor(j)] * self.__k_matrix[i, j]
-                out /= (self.__dx_matrix[floor(j)] + self.__dx_matrix[ceil(i)]) / 2
+                out /= (self.__dx_matrix[floor(i)] + self.__dx_matrix[ceil(i)]) / 2
                 return out
             else:
                 assert False, "wrong index, not int + int and a half-like int"
