@@ -8,16 +8,23 @@ import utils as u
 def get_q_bound(t_matrix: TInterBlockMatrix, p_b) -> np.ndarray:
     nx, ny = t_matrix.shape
     out = np.zeros(nx * ny)
-    for col_ind in range(ny):
-        one_d = u.two_dim_index_to_one(0, col_ind, ny)
-        out[one_d] += t_matrix[-0.5, col_ind] * p_b
-        one_d = u.two_dim_index_to_one(nx - 1, col_ind, ny)
-        out[one_d] += t_matrix[nx - 0.5, col_ind] * p_b
-    for row_ind in range(nx):
-        one_d = u.two_dim_index_to_one(row_ind, 0, ny)
-        out[one_d] += t_matrix[row_ind, -0.5] * p_b
-        one_d = u.two_dim_index_to_one(row_ind, ny - 1, ny)
-        out[one_d] += t_matrix[row_ind, ny - 0.5] * p_b
+    if ny >= 1:
+        for col_ind in range(ny):
+            one_d = u.two_dim_index_to_one(0, col_ind, ny)
+            out[one_d] += t_matrix[-0.5, col_ind] * p_b
+            one_d = u.two_dim_index_to_one(nx - 1, col_ind, ny)
+            out[one_d] += t_matrix[nx - 0.5, col_ind] * p_b
+        for row_ind in range(nx):
+            one_d = u.two_dim_index_to_one(row_ind, 0, ny)
+            out[one_d] += t_matrix[row_ind, -0.5] * p_b
+            one_d = u.two_dim_index_to_one(row_ind, ny - 1, ny)
+            out[one_d] += t_matrix[row_ind, ny - 0.5] * p_b
+    else:
+        one_d = u.two_dim_index_to_one(0, 0, ny)
+        out[one_d] += t_matrix[-0.5, 0] * p_b
+        one_d = u.two_dim_index_to_one(nx - 1, 0, ny)
+        out[one_d] += t_matrix[nx - 0.5, 0] * p_b
+
     return out.reshape((-1, 1))
 
 
@@ -38,14 +45,15 @@ def get_t_upd_matrix(t: TInterBlockMatrix) -> np.ndarray:
         c_i = one_dim_index_to_two(m=d_i, ny=ny)
         out[d_i, d_i] += t[c_i[0] + 0.5, c_i[1]]
         out[d_i, d_i] += t[c_i[0] - 0.5, c_i[1]]
-        out[d_i, d_i] += t[c_i[0], c_i[1] - 0.5]
-        out[d_i, d_i] += t[c_i[0], c_i[1] + 0.5]
+        if ny > 1:
+            out[d_i, d_i] += t[c_i[0], c_i[1] - 0.5]
+            out[d_i, d_i] += t[c_i[0], c_i[1] + 0.5]
 
-        if 0.5 <= c_i[1]:
-            out[d_i, d_i - 1] = -1 * t[c_i[0], c_i[1] - 0.5]
+            if 0.5 <= c_i[1]:
+                out[d_i, d_i - 1] = -1 * t[c_i[0], c_i[1] - 0.5]
 
-        if c_i[1] <= (ny - 1) - 0.5:
-            out[d_i, d_i + 1] = -1 * t[c_i[0], c_i[1] + 0.5]
+            if c_i[1] <= (ny - 1) - 0.5:
+                out[d_i, d_i + 1] = -1 * t[c_i[0], c_i[1] + 0.5]
 
         if 0.5 <= c_i[0]:
             out[d_i, d_i - ny] = -1 * t[c_i[0] - 0.5, c_i[1]]
